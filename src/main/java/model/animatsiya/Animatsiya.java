@@ -9,6 +9,9 @@ public class Animatsiya {
     private boolean avtomaticheskiyPerehod;
     private int zaderzhkaPeredPokazom; // задержка перед показом
 
+    public void ustanovitTip(model.animatsiya.TipAnimatsii tip) {
+    }
+
     public enum TipAnimatsii {
         NET,
         PLANKO,
@@ -33,6 +36,12 @@ public class Animatsiya {
     }
 
     // Геттеры и сеттеры
+    public static Animatsiya sozdat(TipAnimatsii tip, int prodolzhitelnost) {
+        Animatsiya anim = new Animatsiya();
+        anim.ustanovitTip(tip);
+        anim.ustanovitProdolzhitelnost(prodolzhitelnost);
+        return anim;
+    }
     public TipAnimatsii poluchitTip() { return tip; }
     public void ustanovitTip(TipAnimatsii tip) { this.tip = tip; }
 
