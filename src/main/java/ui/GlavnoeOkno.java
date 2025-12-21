@@ -156,9 +156,9 @@ public class GlavnoeOkno extends JFrame {
         };
 
         for (String text : knopki) {
-            JButton btn = new JButton(text);
-            btn.addActionListener(new KnopkaObrabotchik(text));
-            panelUpravlenie.add(btn);
+            JButton btnOchistit = new JButton("Очистить все слайды");
+            btnOchistit.addActionListener(e -> ochistitVseSlaidi());
+            panelUpravlenie.add(btnOchistit);
         }
 
         // Панель навигации
@@ -177,13 +177,16 @@ public class GlavnoeOkno extends JFrame {
         panelNavigatsiya.add(btnPosledniy);
 
         // Панель настроек
-        JPanel panelNastroiki = new JPanel(new GridLayout(6, 1, 5, 5));
+        JPanel panelNastroiki = new JPanel(new GridLayout(8, 1, 5, 5));
         panelNastroiki.setBorder(BorderFactory.createTitledBorder("Настройки показа"));
 
         checkZametki = new JCheckBox("Показывать заметки", true);
         checkZametki.addActionListener(e -> perekluchitZametki());
 
-        checkAnimatsiya = new JCheckBox("Использовать анимацию", true);
+        checkAnimatsiya = new JCheckBox("Авто-анимация при переключении", true);
+        checkAnimatsiya.addActionListener(e -> {
+            nastroykiProekta.put("avto_animatsiya", checkAnimatsiya.isSelected());
+        });
 
         comboAnimatsii = new JComboBox<>(new String[]{
                 "Без анимации", "Плавное появление", "Слева", "Справа", "Приближение", "Вращение"
@@ -196,12 +199,20 @@ public class GlavnoeOkno extends JFrame {
         sliderSkorost.setPaintLabels(true);
         sliderSkorost.addChangeListener(e -> obnovitSkorostAnimatsii());
 
+        JButton btnTestAnimatsii = new JButton("Тест анимации");
+        btnTestAnimatsii.addActionListener(e -> testAnimatsii());
+
+        JButton btnOstanovitAnimatsiyu = new JButton("Стоп анимации");
+        btnOstanovitAnimatsiyu.addActionListener(e -> ostanovitAnimatsiyu());
+
         panelNastroiki.add(new JLabel("Анимация:"));
         panelNastroiki.add(comboAnimatsii);
         panelNastroiki.add(new JLabel("Скорость:"));
         panelNastroiki.add(sliderSkorost);
         panelNastroiki.add(checkZametki);
         panelNastroiki.add(checkAnimatsiya);
+        panelNastroiki.add(btnTestAnimatsii);
+        panelNastroiki.add(btnOstanovitAnimatsiyu);
 
         // Сборка
         mainPanel.add(panelUpravlenie, BorderLayout.NORTH);
@@ -215,7 +226,52 @@ public class GlavnoeOkno extends JFrame {
         // Меню
         sozdatMenu();
     }
+    private void testAnimatsii() {
+        if (kollektsiya.pusto()) {
+            JOptionPane.showMessageDialog(this, "Нет слайдов для тестирования анимации");
+            return;
+        }
 
+        Slaid tekushiy = kollektsiya.poluchit(sostoyanie.getTekushiyIndex());
+        Animatsiya anim = tekushiy.poluchitAnimatsiyu();
+
+        // Обновляем анимацию из UI
+        model.animatsiya.TipAnimatsii[] vseTipi = model.animatsiya.TipAnimatsii.values();
+        int selectedIndex = comboAnimatsii.getSelectedIndex();
+        if (selectedIndex >= 0 && selectedIndex < vseTipi.length) {
+            anim.ustanovitTip(vseTipi[selectedIndex]);
+        }
+        anim.ustanovitProdolzhitelnost(sliderSkorost.getValue() * 200);
+
+        // Запускаем анимацию
+        animationService.vipolnitAnimatsiyu(tekushiy, slaidPanel, anim);
+
+        JOptionPane.showMessageDialog(this,
+                "Анимация запущена: " + anim.poluchitTip() +
+                        "\nДлительность: " + anim.poluchitProdolzhitelnost() + " мс");
+    }
+
+
+
+    private void ochistitVseSlaidi() {
+        if (kollektsiya.pusto()) {
+            JOptionPane.showMessageDialog(this, "Нет слайдов для очистки");
+            return;
+        }
+
+        int otvet = JOptionPane.showConfirmDialog(this,
+                "Вы уверены, что хотите удалить все слайды?",
+                "Очистка слайдов",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
+        if (otvet == JOptionPane.YES_OPTION) {
+            kollektsiya.ochistit();
+            sostoyanie = ViewState.sozdatNachalnoeSostoyanie();
+            obnovitSlaid();
+            JOptionPane.showMessageDialog(this, "Все слайды удалены");
+        }
+    }
     class KnopkaObrabotchik implements ActionListener {
         private String text;
 
@@ -322,16 +378,33 @@ public class GlavnoeOkno extends JFrame {
 
             // Обновляем настройки анимации
             Animatsiya anim = tekushiy.poluchitAnimatsiyu();
-            comboAnimatsii.setSelectedIndex(anim.poluchitTip().ordinal());
+            model.animatsiya.TipAnimatsii[] vseTipi = model.animatsiya.TipAnimatsii.values();
+
+            // Синхронизируем комбобокс с анимацией
+            for (int i = 0; i < vseTipi.length; i++) {
+                if (vseTipi[i] == anim.poluchitTip()) {
+                    comboAnimatsii.setSelectedIndex(i);
+                    break;
+                }
+            }
             sliderSkorost.setValue(anim.poluchitProdolzhitelnost() / 200);
         }
 
         labelProgress.setText(sostoyanie.getProgressText());
         obnovitNavigatsiyu();
 
-        // Применяем анимацию если включена
-        if (checkAnimatsiya.isSelected() && comboAnimatsii.getSelectedIndex() > 0) {
-            vipolnitAnimatsiyu();
+        // Автоматически запускаем анимацию если включена
+        if (checkAnimatsiya.isSelected()) {
+            Slaid tekushiySlaid = kollektsiya.poluchit(sostoyanie.getTekushiyIndex());
+            Animatsiya anim = tekushiySlaid.poluchitAnimatsiyu();
+            if (anim.poluchitTip() != model.animatsiya.TipAnimatsii.NET) {
+                // Небольшая задержка перед анимацией
+                Timer timer = new Timer(100, e -> {
+                    animationService.vipolnitAnimatsiyu(tekushiySlaid, slaidPanel, anim);
+                });
+                timer.setRepeats(false);
+                timer.start();
+            }
         }
     }
 
@@ -526,11 +599,21 @@ public class GlavnoeOkno extends JFrame {
         if (!kollektsiya.pusto()) {
             Slaid tekushiy = kollektsiya.poluchit(sostoyanie.getTekushiyIndex());
             Animatsiya anim = tekushiy.poluchitAnimatsiyu();
+
             model.animatsiya.TipAnimatsii[] vseTipi = model.animatsiya.TipAnimatsii.values();
-            if (comboAnimatsii.getSelectedIndex() < vseTipi.length) {
-                anim.ustanovitTip(vseTipi[comboAnimatsii.getSelectedIndex()]);
+            int selectedIndex = comboAnimatsii.getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < vseTipi.length) {
+                anim.ustanovitTip(vseTipi[selectedIndex]);
             }
+
+            // Сохраняем настройку в проекте
+            nastroykiProekta.put("tip_animatsii", comboAnimatsii.getSelectedItem().toString());
         }
+    }
+
+    private void ostanovitAnimatsiyu() {
+        animationService.ostanovitAnimatsiyu();
+        JOptionPane.showMessageDialog(this, "Анимация остановлена");
     }
 
     private void obnovitSkorostAnimatsii() {
