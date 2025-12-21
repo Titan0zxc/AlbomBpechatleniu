@@ -7,7 +7,7 @@ import java.util.NoSuchElementException;
 /**
  * Реализация коллекции слайдов на двусвязном списке
  */
-public abstract class SlaidSpisok implements SlaidKolleksiya {
+public class SlaidSpisok implements SlaidKolleksiya {
 
     // Внутренний класс узла
     private static class Uzel {

@@ -1,18 +1,17 @@
 package model.Slaid;
 
+import model.Slaid.Slaid;
 import model.kontent.Kontent;
 import model.animatsiya.Animatsiya;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.UUID;
 
-/**
- * Конкретная реализация слайда с изображением
- */
-public class IzobrazhenieSlaid extends Slaid {
+public abstract class IzobrazhenieSlaid extends Slaid {
     private BufferedImage buferIzobrazheniya;
+    private transient Image originalnoeIzobrazhenie; // transient - не сериализуем
+    private Map<String, Object> metaDannie = new HashMap<>();
 
     public IzobrazhenieSlaid() {
         this.id = UUID.randomUUID().toString();
@@ -22,18 +21,17 @@ public class IzobrazhenieSlaid extends Slaid {
 
     @Override
     public void otobrazhit() {
-        // Создаем буфер для отрисовки
-        if (osnovnoeIzobrazhenie != null) {
-            int shirina = osnovnoeIzobrazhenie.getWidth(null);
-            int visota = osnovnoeIzobrazhenie.getHeight(null);
+        if (originalnoeIzobrazhenie != null) {
+            int shirina = originalnoeIzobrazhenie.getWidth(null);
+            int visota = originalnoeIzobrazhenie.getHeight(null);
 
             buferIzobrazheniya = new BufferedImage(shirina, visota, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = buferIzobrazheniya.createGraphics();
 
             // Рисуем основное изображение
-            g2d.drawImage(osnovnoeIzobrazhenie, 0, 0, null);
+            g2d.drawImage(originalnoeIzobrazhenie, 0, 0, null);
 
-            // Рисуем весь контент поверх изображения
+            // Рисуем контент
             for (Kontent kontent : spisokKontenta) {
                 Rectangle granitsi = new Rectangle(0, 0, shirina, visota);
                 kontent.risovat(g2d, granitsi);
@@ -43,23 +41,25 @@ public class IzobrazhenieSlaid extends Slaid {
         }
     }
 
-    @Override
-    public void dobavitKontent(Kontent kontent) {
-        if (kontent != null && !spisokKontenta.contains(kontent)) {
-            spisokKontenta.add(kontent);
-        }
+    public void ustanovitOriginalnoeIzobrazhenie(Image image) {
+        this.originalnoeIzobrazhenie = image;
     }
 
-    @Override
-    public void udalitKontent(Kontent kontent) {
-        spisokKontenta.remove(kontent);
+    public Image getOriginalnoeIzobrazhenie() {
+        return originalnoeIzobrazhenie;
     }
 
-    public BufferedImage poluchitBuferIzobrazheniya() {
-        return buferIzobrazheniya;
+    // Для сериализации пути к файлу
+    public void ustanovitPutKFailu(String put) {
+        metaDannie.put("put_k_failu", put);
     }
 
-    public List<Kontent> poluchitSpisokKontenta() {
-        return new ArrayList<>(spisokKontenta);
+    public String poluchitPutKFailu() {
+        return (String) metaDannie.get("put_k_failu");
+    }
+
+    // Геттер для metaDannie
+    public Map<String, Object> getMetaDannie() {
+        return metaDannie;
     }
 }
