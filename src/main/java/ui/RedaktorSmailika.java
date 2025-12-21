@@ -1,4 +1,4 @@
-package servisi;
+package ui;
 
 import model.Slaid.Slaid;
 import model.kontent.SmailikKontent;
@@ -21,6 +21,7 @@ public class RedaktorSmailika extends JDialog {
 
     private void initComponents() {
         JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         panel.add(new JLabel("Тип смайлика:"));
         comboTip = new JComboBox<>(SmailikKontent.TipSmailika.values());
@@ -45,6 +46,8 @@ public class RedaktorSmailika extends JDialog {
 
         add(panel, BorderLayout.CENTER);
         add(panelKnopki, BorderLayout.SOUTH);
+
+        setSize(400, 200);
     }
 
     private void dobavitSmailik() {

@@ -1,6 +1,5 @@
 package model.Slaid;
 
-import model.Slaid.Slaid;
 import model.kontent.Kontent;
 import model.animatsiya.Animatsiya;
 import java.awt.*;
@@ -8,9 +7,9 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 
-public abstract class IzobrazhenieSlaid extends Slaid {
+public class IzobrazhenieSlaid extends Slaid {
     private BufferedImage buferIzobrazheniya;
-    private transient Image originalnoeIzobrazhenie; // transient - не сериализуем
+    private transient Image originalnoeIzobrazhenie;
     private Map<String, Object> metaDannie = new HashMap<>();
 
     public IzobrazhenieSlaid() {
@@ -28,10 +27,8 @@ public abstract class IzobrazhenieSlaid extends Slaid {
             buferIzobrazheniya = new BufferedImage(shirina, visota, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = buferIzobrazheniya.createGraphics();
 
-            // Рисуем основное изображение
             g2d.drawImage(originalnoeIzobrazhenie, 0, 0, null);
 
-            // Рисуем контент
             for (Kontent kontent : spisokKontenta) {
                 Rectangle granitsi = new Rectangle(0, 0, shirina, visota);
                 kontent.risovat(g2d, granitsi);
@@ -39,6 +36,28 @@ public abstract class IzobrazhenieSlaid extends Slaid {
 
             g2d.dispose();
         }
+    }
+
+    @Override
+    public void dobavitKontent(Kontent kontent) {
+        if (kontent != null && !spisokKontenta.contains(kontent)) {
+            spisokKontenta.add(kontent);
+        }
+    }
+
+    @Override
+    public void udalitKontent(Kontent kontent) {
+        spisokKontenta.remove(kontent);
+    }
+
+    // Метод для получения буфера изображения
+    public BufferedImage poluchitBuferIzobrazheniya() {
+        return buferIzobrazheniya;
+    }
+
+    // Метод для получения списка контента
+    public List<Kontent> poluchitSpisokKontenta() {
+        return new ArrayList<>(spisokKontenta);
     }
 
     public void ustanovitOriginalnoeIzobrazhenie(Image image) {
@@ -49,7 +68,6 @@ public abstract class IzobrazhenieSlaid extends Slaid {
         return originalnoeIzobrazhenie;
     }
 
-    // Для сериализации пути к файлу
     public void ustanovitPutKFailu(String put) {
         metaDannie.put("put_k_failu", put);
     }
@@ -58,7 +76,6 @@ public abstract class IzobrazhenieSlaid extends Slaid {
         return (String) metaDannie.get("put_k_failu");
     }
 
-    // Геттер для metaDannie
     public Map<String, Object> getMetaDannie() {
         return metaDannie;
     }

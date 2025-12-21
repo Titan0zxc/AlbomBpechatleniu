@@ -1,25 +1,27 @@
 package ui;
 
-import model.Slaid.Slaid;
+import builders.ViewState;
+import fabriki.IzobrazhenieSlaidFabrika;
+import fabriki.SlaidFabrika;
+import kollektsii.SlaidKolleksiya;
+import kollektsii.SlaidSpisok;
 import model.Slaid.IzobrazhenieSlaid;
-import model.kontent.*;
+import model.Slaid.Slaid;
 import model.animatsiya.Animatsiya;
 import model.animatsiya.TipAnimatsii;
-import kollektsii.SlaidSpisok;
-import kollektsii.SlaidKolleksiya;
-import builders.ViewState;
-import fabriki.SlaidFabrika;
-import fabriki.IzobrazhenieSlaidFabrika;
-import servisi.AnimationService;
+import model.kontent.Kontent;
 import persistence.ProektSaver;
+import servisi.AnimationService;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.*;
-import javax.imageio.ImageIO;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GlavnoeOkno extends JFrame {
 
@@ -524,7 +526,10 @@ public class GlavnoeOkno extends JFrame {
         if (!kollektsiya.pusto()) {
             Slaid tekushiy = kollektsiya.poluchit(sostoyanie.getTekushiyIndex());
             Animatsiya anim = tekushiy.poluchitAnimatsiyu();
-            anim.ustanovitTip(TipAnimatsii.values()[comboAnimatsii.getSelectedIndex()]);
+            model.animatsiya.TipAnimatsii[] vseTipi = model.animatsiya.TipAnimatsii.values();
+            if (comboAnimatsii.getSelectedIndex() < vseTipi.length) {
+                anim.ustanovitTip(vseTipi[comboAnimatsii.getSelectedIndex()]);
+            }
         }
     }
 
