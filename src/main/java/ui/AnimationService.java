@@ -1,12 +1,14 @@
-package servisi;
+package ui;
 
+import model.Slaid.Slaid;
 import model.animatsiya.Animatsiya;
 import model.animatsiya.TipAnimatsii;
-import model.Slaid.Slaid;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class AnimationService {
 

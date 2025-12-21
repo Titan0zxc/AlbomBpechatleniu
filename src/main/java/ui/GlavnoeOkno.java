@@ -8,10 +8,8 @@ import kollektsii.SlaidSpisok;
 import model.Slaid.IzobrazhenieSlaid;
 import model.Slaid.Slaid;
 import model.animatsiya.Animatsiya;
-import model.animatsiya.TipAnimatsii;
 import model.kontent.Kontent;
 import persistence.ProektSaver;
-import servisi.AnimationService;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -148,18 +146,24 @@ public class GlavnoeOkno extends JFrame {
         });
         panelZametka.add(new JScrollPane(textAreaZametka), BorderLayout.CENTER);
 
-        // Панель управления
+        // Панель управления - ИСПРАВЛЕНО
         JPanel panelUpravlenie = new JPanel(new FlowLayout(FlowLayout.LEFT));
         String[] knopki = {
                 "Загрузить изображения", "Добавить текст", "Добавить смайлик",
                 "Сохранить слайд", "Сохранить проект", "Открыть проект"
         };
 
+        // Создаем все основные кнопки
         for (String text : knopki) {
-            JButton btnOchistit = new JButton("Очистить все слайды");
-            btnOchistit.addActionListener(e -> ochistitVseSlaidi());
-            panelUpravlenie.add(btnOchistit);
+            JButton btn = new JButton(text);
+            btn.addActionListener(new KnopkaObrabotchik(text));
+            panelUpravlenie.add(btn);
         }
+
+        // Отдельно добавляем кнопку очистки
+        JButton btnOchistit = new JButton("Очистить все слайды");
+        btnOchistit.addActionListener(e -> ochistitVseSlaidi());
+        panelUpravlenie.add(btnOchistit);
 
         // Панель навигации
         JPanel panelNavigatsiya = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -177,7 +181,7 @@ public class GlavnoeOkno extends JFrame {
         panelNavigatsiya.add(btnPosledniy);
 
         // Панель настроек
-        JPanel panelNastroiki = new JPanel(new GridLayout(8, 1, 5, 5));
+        JPanel panelNastroiki = new JPanel(new GridLayout(8, 1, 5, 5)); // Увеличили до 8 строк
         panelNastroiki.setBorder(BorderFactory.createTitledBorder("Настройки показа"));
 
         checkZametki = new JCheckBox("Показывать заметки", true);
@@ -205,6 +209,7 @@ public class GlavnoeOkno extends JFrame {
         JButton btnOstanovitAnimatsiyu = new JButton("Стоп анимации");
         btnOstanovitAnimatsiyu.addActionListener(e -> ostanovitAnimatsiyu());
 
+        // Добавляем компоненты в правильном порядке
         panelNastroiki.add(new JLabel("Анимация:"));
         panelNastroiki.add(comboAnimatsii);
         panelNastroiki.add(new JLabel("Скорость:"));
@@ -408,16 +413,7 @@ public class GlavnoeOkno extends JFrame {
         }
     }
 
-    private void vipolnitAnimatsiyu() {
-        if (kollektsiya.pusto()) return;
 
-        Slaid tekushiy = kollektsiya.poluchit(sostoyanie.getTekushiyIndex());
-        Animatsiya anim = tekushiy.poluchitAnimatsiyu();
-
-        if (anim.poluchitTip() != TipAnimatsii.NET) {
-            animationService.vipolnitAnimatsiyu(tekushiy, slaidPanel, anim);
-        }
-    }
 
     private void predidushiySlaid() {
         if (sostoyanie.getTekushiyIndex() > 0) {
