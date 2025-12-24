@@ -5,10 +5,7 @@ import model.kontent.Kontent;
 import model.animatsiya.Animatsiya;
 import java.io.File;
 
-/**
- * Абстрактная фабрика для создания объектов слайда
- * Аналогично Fabrika из вашего предыдущего проекта
- */
+
 public interface SlaidFabrika {
 
     /**

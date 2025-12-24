@@ -15,15 +15,18 @@ public interface SlaidKolleksiya extends Iterable<Slaid> {
     void udalit(Slaid slaid);
     void udalit(int index);
     Slaid poluchit(int index);
+//    получить слайд по его индексу (номеру). Это основной метод для перехода к конкретному слайду.
     int razmer();
     boolean pusto();
     void ochistit();
 
     // Специальные операции для слайдов
     void pomenyatMesta(int index1, int index2);
+//    поменять два слайда местами.
     void peremestit(int otIndex, int kIndex);
+//    переместить слайд с одной позиции на другую.
     void obratniyPoryadok();
-
+//развернуть всю последовательность слайдов.
     // Поиск
     int naytiIndex(Slaid slaid);
     boolean soderzhit(Slaid slaid);
